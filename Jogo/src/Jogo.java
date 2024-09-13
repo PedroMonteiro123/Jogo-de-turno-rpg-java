@@ -7,7 +7,5 @@ public class Jogo {
     public static void main(String[] args) {
         Menu menu = new Menu();
         menu.exibirMenu();
-        System.out.println();
     }
 }
-

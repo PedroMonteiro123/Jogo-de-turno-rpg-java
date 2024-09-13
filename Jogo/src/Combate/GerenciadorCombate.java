@@ -1,40 +1,56 @@
 package Combate;
 
-import java.util.List;
-
 import Personagens.*;
 
 public class GerenciadorCombate {
-    public void iniciarCombate(Jogador jogador, List<Adversario> adversarios) {
-        for (Adversario adversario : adversarios) {
-            System.out.println("Combate entre " + jogador.getNome() + " e " + adversario.getNome() + " começou!");
+    private Recompensas recompensas = new Recompensas();
 
-            while (jogador.estaVivo() && adversario.estaVivo()) {
-                realizarTurno(jogador, adversario);
-                if (!adversario.estaVivo()) {
-                    System.out.println(jogador.getNome() + " venceu o combate contra " + adversario.getNome() + "!");
-                    break;
-                }
+    public void iniciarCombate(Jogador jogador, int caminhoEscolhido) {
+        GerenciadorInimigos gerenciadorInimigos = new GerenciadorInimigos();
 
-                realizarTurno(adversario, jogador);
-                if (!jogador.estaVivo()) {
-                    System.out.println(adversario.getNome() + " venceu!");
-                    break;
-                }
-            }
-
-            if (!jogador.estaVivo()) {
-                System.out.println("Fim de jogo. Você foi derrotado.");
-                break;
-            }
+        Adversario adversario1 = gerenciadorInimigos.selecionarAdversarioPrimeiroCombate(caminhoEscolhido);
+        realizarCombate(jogador, adversario1);
+        if (jogador.estaVivo()) {
+            recompensas.darPremioPrimeiroCombate(jogador);
+        } else {
+            exibirDerrota(jogador);
+            return;
         }
 
+        Adversario adversario2 = gerenciadorInimigos.selecionarAdversarioSegundoCombate(caminhoEscolhido);
+        realizarCombate(jogador, adversario2);
         if (jogador.estaVivo()) {
-            System.out.println(jogador.getNome() + " sobreviveu a todos os combates!");
+            recompensas.darPremioSegundoCombate(jogador);
+        } else {
+            exibirDerrota(jogador);
+            return;
+        }
+
+        Adversario inimigoFinal = gerenciadorInimigos.criarInimigoFinal(caminhoEscolhido);
+        realizarCombate(jogador, inimigoFinal);
+        if (jogador.estaVivo()) {
+            recompensas.darPremioFinal(jogador);
+            exibirVitoria(jogador);
+        } else {
+            exibirDerrota(jogador);
         }
     }
 
-    private void realizarTurno(Personagem atacante, Personagem defensor) {
-        atacante.realizarAcao(defensor);
+    private void realizarCombate(Jogador jogador, Adversario adversario) {
+        System.out.println("\nO combate começou entre " + jogador.getNome() + " e " + adversario.getNome());
+        while (jogador.estaVivo() && adversario.estaVivo()) {
+            jogador.realizarAcao(adversario);
+            if (adversario.estaVivo()) {
+                adversario.realizarAcao(jogador);
+            }
+        }
+    }
+
+    private void exibirVitoria(Jogador jogador) {
+        new TelaFinal().exibirVitoria(jogador);
+    }
+
+    private void exibirDerrota(Jogador jogador) {
+        new TelaFinal().exibirDerrota(jogador);
     }
 }
